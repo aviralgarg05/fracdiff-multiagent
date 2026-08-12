@@ -1,5 +1,8 @@
 # fracdiff-multiagent
 
+[![tests](https://github.com/aviralgarg05/fracdiff-multiagent/actions/workflows/tests.yml/badge.svg)](https://github.com/aviralgarg05/fracdiff-multiagent/actions/workflows/tests.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 An independent re-implementation of
 
 > Znaidi M. R., Gupta G., Asgari K. & Bogdan P. (2020),
@@ -165,3 +168,7 @@ dwell-time distribution and alpha from the tail of the jump-size distribution.
 * The topology contrast in `04` is not reliably powered and is marked as such.
 * No advection term. Adding one, and deriving the corresponding moment
   expressions, is the natural next piece of theory.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
