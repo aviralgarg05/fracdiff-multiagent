@@ -56,13 +56,16 @@ tests/            assertions for every claim below
 Eq. (10) omits `(pi^2 / 6 alpha^2)(1 - beta^2)`, the variance contributed by the
 random subordinator. It is exact at `beta = 1` and wrong otherwise:
 
+Printed by `experiments/01_verify_propositions.py` (4M samples, `t = 0.5`); the
+Monte Carlo column is stable to about three significant figures.
+
 | scenario | Monte Carlo | Eq. (10) | error |
 |---|---|---|---|
-| normal (beta=1) | 1.2345 | 1.2337 | 0.07 % |
-| space (beta=1) | 6.7766 | 6.7854 | 0.13 % |
-| time (beta=0.5) | 1.5421 | 1.2337 | 25.0 % |
-| mixed (beta=0.75) | 1.8067 | 1.4850 | 21.6 % |
-| neutral (beta=0.5) | 9.8804 | 4.9348 | 100.2 % |
+| normal (beta=1) | 1.2340 | 1.2337 | 0.02 % |
+| space (beta=1) | 6.7888 | 6.7854 | 0.05 % |
+| time (beta=0.5) | 1.5424 | 1.2337 | 25.0 % |
+| mixed (beta=0.75) | 1.8053 | 1.4850 | 21.6 % |
+| neutral (beta=0.5) | 9.8821 | 4.9348 | 100.2 % |
 
 The corrected expression is
 
@@ -80,8 +83,10 @@ Three independent confirmations, all in `tests/test_theory.py`:
    corrected inversion.
 
 So the paper's results are unaffected, but Algorithm 2 line 8 carries the same
-omission, and implementing from the printed text gives 22-25 % error on alpha.
-Both forms are available as `algorithm2(..., variant="corrected" | "as_printed")`.
+omission. Implementing from the printed text costs a mean of about 23 % on alpha
+across the two `beta < 1` scenarios, 13-28 % depending on the seed (10 seeds,
+N = 1000). Both forms are available as
+`algorithm2(..., variant="corrected" | "as_printed")`.
 
 ### The paper reproduces
 
