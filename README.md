@@ -49,6 +49,54 @@ experiments/      the five scripts above; each prints a table
 tests/            assertions for every claim below
 ```
 
+## Synthetic data
+
+Trajectories are a continuous-time random walk, following the scheme in the
+authors' `gen_sim_data.m` but implemented independently (`fracdiff/simulate.py`).
+
+* **Waiting times** are totally skewed positive `beta`-stable with scale
+  `c_wait = ta^(1/beta)`; **jumps** are Riesz-Feller `alpha`-stable with skewness
+  `theta` and scale `c_jump = (D * ta)^(1/alpha)`, with `ta = 1e-5`. That
+  calibration gives `c_jump / c_wait^(beta/alpha) = D^(1/alpha)`, so the scaling
+  limit is the intended equation.
+* **Sampling** is Chambers-Mallows-Stuck. Riesz-Feller maps to Nolan's S1 by
+  `beta_N = -tan(theta pi/2) / tan(alpha pi/2)`, scale `cos(theta pi/2)^(1/alpha)`
+  (`fracdiff/stable.py`), verified against the closed-form fractional absolute
+  moment in `tests/test_theory.py`.
+* **Observation** takes cumulative sums of waiting times and of jumps and reads
+  `X` off by search-sort, on a linear grid over `[0, t_max]` with `t_max` the
+  smallest final renewal time across trajectories, so every trajectory covers the
+  window.
+* **Sweeps** span 2,500-30,000 jumps per trajectory, 10-2,000 trajectories, 5-100
+  observation times and 6-20 seeds. The recovery tables use 1,000 trajectories,
+  60 observation times and 20 seeds.
+* **Scenarios** are the paper's four, `(2, 1, 0)`, `(0.5, 0.5, 0.5)`,
+  `(0.5, 1, 0.25)`, `(2, 0.5, 0)`, plus a mixed case `(1.5, 0.75, 0.25)` used for
+  the stress tests because it exercises `alpha`, `beta` and `theta` at once.
+* **Stress perturbations** are applied to those same trajectories: bounding as
+  `R tanh(X/R)`, drift as an added linear term, noise as additive Gaussian,
+  coupling by mixing in a jump component shared across trajectories with weight
+  `c^(1/alpha)`, and repetition by forcing a fraction of cells to zero. All
+  magnitudes are relative to the interquartile range of `X` at the final time, so
+  they are scale free.
+* **High-dimensional** checks use the sub-Gaussian representation
+  `J = sqrt(2A) G` with `A` positive `(alpha/2)`-stable and `G` standard normal,
+  made anisotropic by scaling coordinate `k` by `1/k`.
+
+The generator is checked rather than trusted: `marginal_X` gives the exact
+one-point law
+
+```
+X(t) =d D^(1/alpha) * t^(beta/alpha) * S_beta(1)^(-beta/alpha) * S_(alpha,theta)
+```
+
+(alpha-stable Levy motion subordinated by the inverse beta-stable subordinator),
+and the CTRW output is compared against Propositions 1-3 with four million
+samples. Proposition 1 agrees to within 0.01 %; Propositions 2 and 3 to within
+1e-3 absolute, their true values passing through zero so a relative error is not
+meaningful. The generator reproducing Props. 1-3 but not Prop. 4 is what located
+the discrepancy below.
+
 ## What the checks found
 
 ### Proposition 4 as printed is wrong for beta < 1
