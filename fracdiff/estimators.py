@@ -49,6 +49,12 @@ def is_admissible(alpha, theta, tol=1e-9):
     observable is wrong. Callers should refuse to report an inadmissible fit rather than
     quoting the numbers.
 
+    Calibrate before using it as evidence. On in-model data at a realistic design (50
+    trajectories, 32 times) the flag fires for 78% of fits at (alpha, beta) = (2, 1), 60% at
+    (1.9, 0.9) and 50% at (1.8, 0.7): near alpha = 2 the admissible set collapses to {theta = 0}
+    and almost any output violates it. A high violation rate is therefore not evidence that data
+    are outside the family unless it exceeds the in-model rate at the same design.
+
     This check is necessary, not sufficient. A non-negative observable forces
     theta/alpha == -1 by construction, and |theta| = alpha breaches the bound only when
     alpha > 1; below that the tautological fit sits exactly on the admissible boundary and
