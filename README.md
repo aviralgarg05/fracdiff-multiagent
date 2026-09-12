@@ -207,11 +207,28 @@ traversing twenty topics has the same displacement growth as one repeating a
 single sentence. The headroom check passes, so this is not a normalisation
 artifact: the observable is simply not diffusive.
 
-This is one conversation with templated turns and no error bars, so it is a
-warning rather than a result. It is the reason the plan starts with a validity
-gate rather than with a model fit, and why the first alternative to try is
-modelling the conversation as an explicit CTRW, taking beta from the tail of the
-dwell-time distribution and alpha from the tail of the jump-size distribution.
+This was one conversation with templated turns and no error bars, so it was a
+warning rather than a result. It has since been confirmed at scale, and the
+follow-up it originally suggested has been ruled out.
+
+**Update.** On a 200-run corpus and on 100 runs generated for the purpose, the
+obstruction was traced to the encoder rather than to the conversations: changing
+a single word of a 16-word sentence moves the embedding 26% of the attainable
+diameter, and the distance saturates once the window is replaced, so no text
+process gets near the regime where free diffusion is visible. A latent process
+with known alpha and beta, rendered as text and passed through the same encoder,
+is recovered 0% of the time against a no-encoder ceiling of 0.62.
+
+The CTRW route this section used to recommend does not apply. There are no
+waiting times to measure, and the increments are near-Gaussian rather than
+stable, so neither leg of a renewal model exists. The model family is rejected
+rather than unfitted: fits violate the admissibility bound
+|theta| <= min(alpha, 2 - alpha) in 20 of 20 projection directions, and a
+parametric bootstrap over an (alpha, beta) grid at the same design cannot reach
+the data on either the TA-MSD slope or the ergodicity-breaking parameter. An
+Ornstein-Uhlenbeck process with a relaxation time of three to four events
+reproduces both. `algorithm2` now returns an `admissible` flag so an
+out-of-family fit cannot be quoted by accident.
 
 ## Caveats
 
