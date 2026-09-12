@@ -236,8 +236,17 @@ out-of-family fit cannot be quoted by accident.
   samples of the PDE solution; the Proposition checks use the exact marginal.
 * The embedding pilot is a single conversation with one small encoder.
 * The topology contrast in `04` is not reliably powered and is marked as such.
-* No advection term. Adding one, and deriving the corresponding moment
-  expressions, is the natural next piece of theory.
+* No advection term here. It has since been worked out, and the honest finding
+  is that the theory is not new: the space-time fractional advection-diffusion
+  equation with a Riesz-Feller operator was solved by Huang and Liu (2005),
+  and the drift-plus-skewed-generator Laplace-Fourier form
+  `s^(b-1) / (s^b + psi(k))` is in Meerschaert, Benson, Scheffler and Baeumer,
+  Phys. Rev. E **65**, 041103 (2002). What is open is the inverse problem —
+  fitting the five parameters from trajectories rather than solving forward —
+  and the failure mode that comes with it: unmodelled drift pulls `alpha` down
+  by a third and drags `theta` from 0 to -0.79 while `beta` survives, and the
+  estimator reports every one of those fits as admissible. The drift is being
+  absorbed into the skew, so the fix is to fit it rather than to detrend.
 
 ## License
 
