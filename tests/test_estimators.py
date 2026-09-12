@@ -132,3 +132,39 @@ def test_detrending_removes_drift():
     d4 = _mean_fit("mixed", transform=add_drift_then_detrend(4.0))["theta"]
     assert abs(d4 - theta) < 0.12          # recovered, with the known ~18% cost
     assert abs(d4 - d0) < 0.02             # and independent of the drift magnitude
+
+
+def test_fits_are_flagged_when_inadmissible():
+    """The model requires |theta| <= min(alpha, 2 - alpha). A fit outside that is not an
+    estimate, and the estimator must say so rather than returning quotable numbers."""
+    from fracdiff import is_admissible
+    assert is_admissible(1.5, 0.25)
+    assert is_admissible(0.5, 0.5)
+    assert not is_admissible(2.0, 0.65)        # at alpha = 2 the only admissible theta is 0
+    assert not is_admissible(1.717, 0.978)     # limit is 0.283
+    assert not is_admissible(np.nan, 0.0)
+
+    X, ts, alpha, beta, theta = _paths("space")
+    r = algorithm2(X, ts)
+    assert r["admissible"], "a well-specified fit should be admissible"
+    assert "alpha_at_cap" in r
+
+
+def test_nonnegative_observable_gives_a_tautological_theta():
+    """For any non-negative observable the signed and absolute moments coincide, so
+    theta/alpha is -1 by construction. That is a tautology, not an estimate.
+
+    Note what the admissibility flag does and does not catch: |theta| = alpha violates
+    |theta| <= min(alpha, 2 - alpha) only when alpha > 1, so for a fitted alpha at or below 1
+    the pathological fit sits exactly on the admissible boundary and is NOT flagged. The
+    tautology has to be caught by checking the observable, which is why the estimator
+    docstring says to use a signed projection.
+    """
+    from fracdiff import is_admissible
+    X, ts, *_ = _paths("mixed")
+    r = algorithm2(np.abs(X), ts)
+    assert abs(r["t_over_a"] + 1.0) < 1e-6           # the tautology
+    assert abs(r["theta"] + r["alpha"]) < 1e-6       # theta == -alpha exactly
+    # the flag catches it above alpha = 1 and cannot below it
+    assert not is_admissible(1.5, -1.5)
+    assert is_admissible(0.8, -0.8)

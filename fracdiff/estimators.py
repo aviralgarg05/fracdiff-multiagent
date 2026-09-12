@@ -22,7 +22,7 @@ from scipy.special import gamma as G
 
 from .theory import EULER
 
-__all__ = ["w_L", "theta_over_alpha", "algorithm1", "algorithm2"]
+__all__ = ["w_L", "theta_over_alpha", "algorithm1", "algorithm2", "is_admissible"]
 
 
 def w_L(x):
@@ -39,6 +39,24 @@ def theta_over_alpha(M, S, delta):
     """
     r = np.mean(S / M)
     return w_L(-(2.0 / (np.pi * delta)) * np.arctan(np.tan(np.pi * delta / 2) * r))
+
+
+def is_admissible(alpha, theta, tol=1e-9):
+    """Does a fitted pair satisfy the model's own constraint |theta| <= min(alpha, 2 - alpha)?
+
+    A fit that violates it is not a parameter estimate: the PDE the estimator is inverting has
+    no such member. In practice a violation means the data are outside the family, or the
+    observable is wrong. Callers should refuse to report an inadmissible fit rather than
+    quoting the numbers.
+
+    This check is necessary, not sufficient. A non-negative observable forces
+    theta/alpha == -1 by construction, and |theta| = alpha breaches the bound only when
+    alpha > 1; below that the tautological fit sits exactly on the admissible boundary and
+    passes. Check the observable as well: use a signed projection, never a distance.
+    """
+    if not (np.isfinite(alpha) and np.isfinite(theta)):
+        return False
+    return abs(theta) <= min(alpha, 2.0 - alpha) + tol
 
 
 def _prepare(X):
@@ -86,12 +104,14 @@ def algorithm2(X, ts, delta=1e-3, variant="corrected"):
 
     if q <= 0:
         return dict(alpha=np.nan, beta=np.nan, theta=np.nan, D=np.nan,
-                    b_over_a=m, t_over_a=toa)
+                    b_over_a=m, t_over_a=toa, admissible=False, alpha_at_cap=False)
 
     alpha = min(2.0, q ** -0.5)
     D = np.exp(alpha * (c - EULER * (m - 1)))
-    return dict(alpha=alpha, beta=m * alpha, theta=toa * alpha, D=D,
-                b_over_a=m, t_over_a=toa)
+    theta = toa * alpha
+    return dict(alpha=alpha, beta=m * alpha, theta=theta, D=D,
+                b_over_a=m, t_over_a=toa, admissible=is_admissible(alpha, theta),
+                alpha_at_cap=bool(alpha >= 2.0 - 1e-12))
 
 
 def algorithm1(X, ts, deltas=None, delta_theta=1e-3):
@@ -144,7 +164,9 @@ def algorithm1(X, ts, deltas=None, delta_theta=1e-3):
                 continue
     if best is None:
         return dict(alpha=np.nan, beta=np.nan, theta=np.nan, D=np.nan,
-                    b_over_a=boa, t_over_a=toa)
+                    b_over_a=boa, t_over_a=toa, admissible=False, alpha_at_cap=False)
     alpha, D = best
-    return dict(alpha=alpha, beta=boa * alpha, theta=toa * alpha, D=D,
-                b_over_a=boa, t_over_a=toa)
+    theta = toa * alpha
+    return dict(alpha=alpha, beta=boa * alpha, theta=theta, D=D,
+                b_over_a=boa, t_over_a=toa, admissible=is_admissible(alpha, theta),
+                alpha_at_cap=bool(alpha >= 2.0 - 1e-12))
