@@ -8,7 +8,8 @@ from .estimators import algorithm1, algorithm2, is_admissible, theta_over_alpha,
 from .simulate import ctrw_paths, ctrw_paths_highdim, marginal_X
 from .stable import feller_stable, feller_to_nolan, pos_stable_sub, stable_rvs
 from .theory import (EULER, prop1_abs, prop2_signed, prop3_logmean,
-                     prop4_logvar_as_printed, prop4_logvar_corrected, prop5_logsq)
+                     prop4_logvar_as_printed, prop4_logvar_corrected, prop5_logsq,
+                     prop5_logsq_as_printed, prop5_logsq_corrected)
 
 __version__ = "0.1.0"
 
@@ -28,5 +29,6 @@ __all__ = [
     "stable_rvs", "feller_to_nolan", "feller_stable", "pos_stable_sub",
     "prop1_abs", "prop2_signed", "prop3_logmean",
     "prop4_logvar_as_printed", "prop4_logvar_corrected", "prop5_logsq",
+    "prop5_logsq_as_printed", "prop5_logsq_corrected",
     "EULER", "SCENARIOS", "__version__",
 ]

@@ -74,11 +74,34 @@ def prop4_logvar_corrected(alpha, beta, theta):
             + (np.pi ** 2 / (6 * alpha ** 2)) * (1 - beta ** 2))
 
 
-def prop5_logsq(alpha, beta, theta, D, t):
-    """Proposition 5: ``E[(log|X(t)|)^2]``."""
+def prop5_logsq_as_printed(alpha, beta, theta, D, t):
+    """Proposition 5 (Eq. 11) exactly as printed.  Correct only at ``D = 1``.
+
+    Note the constant ``c`` below: it carries ``(pi^2 / 6 alpha^2)(1 - beta^2)``, the very
+    term Eq. (10) omits.  Since ``E[Y^2] = var(Y) + (E Y)^2`` and Proposition 3 supplies
+    ``E Y``, this equation implies the corrected variance.  Eq. (10) and Eq. (11) are
+    mutually inconsistent as printed, and Eq. (11) is the one that is right.
+    """
     m = beta / alpha
     c = ((np.pi ** 2 / 6) * (1 / alpha ** 2 + 0.5)
          - (np.pi * theta / (2 * alpha)) ** 2
          + (np.log(D) / alpha + EULER * (m - 1)) ** 2
          + (np.pi ** 2 / (6 * alpha ** 2)) * (1 - beta ** 2))
     return m ** 2 * np.log(t) ** 2 + 2 * (beta * EULER / alpha) * (m - 1) * np.log(t) + c
+
+
+def prop5_logsq_corrected(alpha, beta, theta, D, t):
+    """``E[(log|X(t)|)^2]`` with the missing ``log D`` cross term restored.
+
+    Squaring Proposition 3 gives a cross term ``2 (beta/alpha) log(t) * [log(D)/alpha + ...]``.
+    The printed Eq. (11) keeps only the ``gamma`` half of it, so it is short by
+    ``2 beta log(D) log(t) / alpha^2``.  That vanishes iff ``D = 1``, which is what every
+    experiment in the paper uses, so nothing published depends on it.  Algorithm 2 never
+    evaluates Eq. (11) either.
+    """
+    return (prop5_logsq_as_printed(alpha, beta, theta, D, t)
+            + 2 * beta * np.log(D) * np.log(t) / alpha ** 2)
+
+
+# Backwards-compatible alias; the printed form is what earlier code called.
+prop5_logsq = prop5_logsq_as_printed

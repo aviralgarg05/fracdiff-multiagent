@@ -136,6 +136,22 @@ across the two `beta < 1` scenarios, 13-28 % depending on the seed (10 seeds,
 N = 1000). Both forms are available as
 `algorithm2(..., variant="corrected" | "as_printed")`.
 
+Line 8 is printed as `alpha_hat <- (sigma^2 * 6/pi^2 - 1/2)^(-1/2)`, which is
+more reduced still: it drops the `(pi theta / 2 alpha)^2` term that Eq. (10)
+does carry. Implementing that line verbatim gives 13.3 %, 22.3 % and 15.5 % on
+the neutral, time and mixed scenarios - not uniformly worse than inverting
+Eq. (10), because dropping theta partly cancels the beta error.
+
+### Proposition 5 is correct only at D = 1
+
+Eq. (11) prints the `log(t)` coefficient as `2 (beta gamma / alpha)(beta/alpha - 1)`.
+Expanding `(E log|X(t)|)^2` from Eq. (9) gives that term plus
+`2 beta log(D) log(t) / alpha^2`, which is absent. It vanishes exactly when
+`D = 1`, and every experiment in the paper uses `D = 1`. Monte Carlo at `D = 3`,
+mixed scenario, 300k samples, as `(MC - formula)/SE`: `-148` and `+165` at
+`t = 0.2` and `t = 5`, against `0.5` and `0.7` once the term is restored.
+Eq. (11) is not used by Algorithm 2, so nothing downstream is affected.
+
 ### The paper reproduces
 
 Corrected Algorithm 2, N = 1000, L = 60, 20 seeds, D = 1:
@@ -236,17 +252,23 @@ out-of-family fit cannot be quoted by accident.
   samples of the PDE solution; the Proposition checks use the exact marginal.
 * The embedding pilot is a single conversation with one small encoder.
 * The topology contrast in `04` is not reliably powered and is marked as such.
-* No advection term here. It has since been worked out, and the honest finding
-  is that the theory is not new: the space-time fractional advection-diffusion
-  equation with a Riesz-Feller operator was solved by Huang and Liu (2005),
-  and the drift-plus-skewed-generator Laplace-Fourier form
-  `s^(b-1) / (s^b + psi(k))` is in Meerschaert, Benson, Scheffler and Baeumer,
-  Phys. Rev. E **65**, 041103 (2002). What is open is the inverse problem —
-  fitting the five parameters from trajectories rather than solving forward —
-  and the failure mode that comes with it: unmodelled drift pulls `alpha` down
-  by a third and drags `theta` from 0 to -0.79 while `beta` survives, and the
-  estimator reports every one of those fits as admissible. The drift is being
-  absorbed into the skew, so the fix is to fit it rather than to detrend.
+* No advection term here. It has since been worked out, and neither half of it
+  is new. The forward theory is published: the space-time fractional
+  advection-dispersion equation with a Riesz-Feller operator is solved in Huang
+  and Liu (2005), and the Laplace-Fourier form `s^(b-1) / (s^b + psi(k))` for a
+  drift-plus-skewed generator is in Meerschaert, Benson, Scheffler and Baeumer,
+  Phys. Rev. E **65**, 041103 (2002). The inverse problem is published too —
+  including by the paper re-implemented here, which recovers `alpha`, `beta`,
+  `theta` and `D` from an ensemble of trajectories, and by
+  Chakraborty, Meerschaert and Lim (2009) and the FracFit package
+  (Kelly et al. 2017), which fit `alpha`, skewness, velocity and dispersivity
+  to plume and breakthrough data. What is left is narrower: the drift as a
+  fifth jointly-estimated parameter, which Znaidi et al. name as future work in
+  their own conclusion.
+* The failure mode is the part worth knowing. Unmodelled drift pulls `alpha`
+  down by a third and drags `theta` from 0 to about -0.83 while `beta` survives,
+  and the estimator reports every one of those fits as admissible. The drift is
+  being absorbed into the skew, so the fix is to fit it rather than to detrend.
 
 ## License
 

@@ -73,3 +73,35 @@ def test_log_variance_is_time_independent():
         marginal_X(alpha, beta, theta, 1.0, t, 400_000, rng))), ddof=1)
         for t in (0.01, 1.0, 100.0)]
     assert max(vals) / min(vals) - 1 < 0.05
+
+
+def test_prop5_is_correct_only_at_unit_diffusivity():
+    """Eq. (11) loses a log(D) cross term, so it is exact at D = 1 and wrong otherwise.
+
+    Squaring Proposition 3 gives 2 (beta/alpha) log(t) [log(D)/alpha + gamma(beta/alpha - 1)];
+    the printed equation keeps only the gamma half. Nothing published depends on it: every
+    experiment in the paper runs at D = 1, and Algorithm 2 never evaluates Eq. (11).
+    """
+    from fracdiff import prop5_logsq_as_printed, prop5_logsq_corrected
+    alpha, beta, theta = SCENARIOS["mixed"]
+    for t in (0.2, 5.0):
+        assert prop5_logsq_as_printed(alpha, beta, theta, 1.0, t) == pytest.approx(
+            prop5_logsq_corrected(alpha, beta, theta, 1.0, t))
+
+    N, D, t = 400_000, 3.0, 5.0
+    x = marginal_X(alpha, beta, theta, D, t, N, np.random.default_rng(11))
+    q = np.log(np.abs(x)) ** 2
+    mc, se = q.mean(), q.std(ddof=1) / np.sqrt(N)
+    assert abs(mc - prop5_logsq_corrected(alpha, beta, theta, D, t)) < 4 * se
+    assert abs(mc - prop5_logsq_as_printed(alpha, beta, theta, D, t)) > 50 * se
+
+
+def test_prop4_and_prop5_as_printed_contradict_each_other():
+    """Eq. (11)'s constant already contains the term Eq. (10) omits, so the paper's own two
+    propositions imply different variances. That is the cleanest evidence for the misprint."""
+    from fracdiff import prop5_logsq_as_printed
+    alpha, beta, theta, D, t = 1.5, 0.75, 0.25, 1.0, 1.0   # log t = 0 isolates the constant
+    implied = prop5_logsq_as_printed(alpha, beta, theta, D, t) - prop3_logmean(
+        alpha, beta, theta, D, t) ** 2
+    assert implied == pytest.approx(prop4_logvar_corrected(alpha, beta, theta))
+    assert abs(implied - prop4_logvar_as_printed(alpha, theta)) > 0.1
