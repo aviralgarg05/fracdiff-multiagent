@@ -95,9 +95,9 @@ def prop5_logsq_corrected(alpha, beta, theta, D, t):
 
     Squaring Proposition 3 gives a cross term ``2 (beta/alpha) log(t) * [log(D)/alpha + ...]``.
     The printed Eq. (11) keeps only the ``gamma`` half of it, so it is short by
-    ``2 beta log(D) log(t) / alpha^2``.  That vanishes iff ``D = 1``, which is what every
-    experiment in the paper uses, so nothing published depends on it.  Algorithm 2 never
-    evaluates Eq. (11) either.
+    ``2 beta log(D) log(t) / alpha^2``.  That vanishes iff ``D = 1``.  Nothing published depends
+    on it: Algorithm 2 never evaluates Eq. (11), and the paper's numerical checks cover
+    Eqs. (3), (4) and (9) but not (10) or (11).
     """
     return (prop5_logsq_as_printed(alpha, beta, theta, D, t)
             + 2 * beta * np.log(D) * np.log(t) / alpha ** 2)

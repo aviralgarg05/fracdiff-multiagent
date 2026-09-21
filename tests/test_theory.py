@@ -79,8 +79,8 @@ def test_prop5_is_correct_only_at_unit_diffusivity():
     """Eq. (11) loses a log(D) cross term, so it is exact at D = 1 and wrong otherwise.
 
     Squaring Proposition 3 gives 2 (beta/alpha) log(t) [log(D)/alpha + gamma(beta/alpha - 1)];
-    the printed equation keeps only the gamma half. Nothing published depends on it: every
-    experiment in the paper runs at D = 1, and Algorithm 2 never evaluates Eq. (11).
+    the printed equation keeps only the gamma half. Nothing published depends on it: Algorithm 2
+    never evaluates Eq. (11), and the paper's numerical checks do not cover it.
     """
     from fracdiff import prop5_logsq_as_printed, prop5_logsq_corrected
     alpha, beta, theta = SCENARIOS["mixed"]

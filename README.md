@@ -29,7 +29,7 @@ needs `torch` and `transformers` (`pip install -e ".[embeddings]"`).
 ## Run
 
 ```bash
-python -m pytest tests/ -q                          # 40 tests, about 70 s
+python -m pytest tests/ -q                          # 44 tests, about 100 s
 python experiments/01_verify_propositions.py        # Monte Carlo vs Props 1-4
 python experiments/02_reproduce_paper_tables.py     # recovery and N_90
 python experiments/03_stress_tests.py               # assumption violations
@@ -124,9 +124,11 @@ var(log|X(t)|) = pi^2/6 * [ (2 - beta^2) / alpha^2 + 1/2 ] - (pi theta / 2 alpha
 Three independent confirmations, all in `tests/test_theory.py`:
 
 1. Monte Carlo matches it to under 2 % in every scenario.
-2. It equals the paper's own Proposition 5 minus Proposition 3 squared. Prop. 5
-   already carries the term, so Props. 4 and 5 contradict each other and Prop. 5
-   is the correct one.
+2. It is what the constant term of the paper's own Proposition 5 implies: Prop. 5
+   minus Prop. 3 squared at `t = 1` gives the corrected variance, because Prop. 5's
+   constant already carries the missing term. So Props. 4 and 5 contradict each
+   other, and Prop. 5 is right on this point. (At other `t` the subtraction also
+   picks up Prop. 5's own `log D` misprint, described below.)
 3. The authors' MATLAB (`fract_diff_est_logm.m` line 37) already computes the
    corrected inversion.
 
@@ -147,7 +149,10 @@ Eq. (10), because dropping theta partly cancels the beta error.
 Eq. (11) prints the `log(t)` coefficient as `2 (beta gamma / alpha)(beta/alpha - 1)`.
 Expanding `(E log|X(t)|)^2` from Eq. (9) gives that term plus
 `2 beta log(D) log(t) / alpha^2`, which is absent. It vanishes exactly when
-`D = 1`, and every experiment in the paper uses `D = 1`. Monte Carlo at `D = 3`,
+`D = 1`. It escaped notice because the paper's numerical checks cover Eqs. (3), (4)
+and (9) but not (10) or (11), and Algorithm 2 never evaluates Eq. (11); the
+`D = 2` and `D = 5` estimation experiments go through the released code, which is
+unaffected. Monte Carlo at `D = 3`,
 mixed scenario, 300k samples, as `(MC - formula)/SE`: `-148` and `+165` at
 `t = 0.2` and `t = 5`, against `0.5` and `0.7` once the term is restored.
 Eq. (11) is not used by Algorithm 2, so nothing downstream is affected.
