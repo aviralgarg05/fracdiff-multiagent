@@ -233,18 +233,26 @@ a single word of a 16-word sentence moves the embedding 26% of the attainable
 diameter, and the distance saturates once the window is replaced, so no text
 process gets near the regime where free diffusion is visible. A latent process
 with known alpha and beta, rendered as text and passed through the same encoder,
-is recovered 0% of the time against a no-encoder ceiling of 0.62.
+is recovered in 0-2% of cases when its drift spans up to 1,024 words, and in
+17-28% only when it spans 4,096 words in a consistent direction, against a
+no-encoder ceiling of 0.62.
 
 The CTRW route this section used to recommend does not apply. There are no
 waiting times to measure, and the increments are near-Gaussian rather than
-stable, so neither leg of a renewal model exists. The model family is rejected
-rather than unfitted: fits violate the admissibility bound
-|theta| <= min(alpha, 2 - alpha) in 20 of 20 projection directions, and a
-parametric bootstrap over an (alpha, beta) grid at the same design cannot reach
-the data on either the TA-MSD slope or the ergodicity-breaking parameter. An
-Ornstein-Uhlenbeck process with a relaxation time of three to four events
-reproduces both. `algorithm2` now returns an `admissible` flag so an
-out-of-family fit cannot be quoted by accident.
+stable, so neither leg of a renewal model exists. A parametric bootstrap over an
+(alpha, beta) grid at the same design cannot reach the data: the lowest TA-MSD
+slope any cell attains is 0.167 against 0.094, and that cell's
+ergodicity-breaking parameter is 28 against 0.0035. An Ornstein-Uhlenbeck
+process comes far closer — a relaxation time of three to four events gets the
+slope right and puts ergodicity breaking within a small factor, though no single
+relaxation time matches both.
+
+The fits also violate the admissibility bound |theta| <= min(alpha, 2 - alpha)
+in 20 of 20 projection directions, but that is not evidence on its own: near
+alpha = 2 the in-model violation rate is 50-78% at this design (see the
+`is_admissible` docstring). `algorithm2` returns an `admissible` flag so an
+out-of-family fit cannot be quoted by accident, not so that a violation can be
+quoted as a result.
 
 ## Caveats
 
